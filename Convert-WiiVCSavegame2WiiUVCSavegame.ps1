@@ -22,7 +22,7 @@ $savedatapath = "D:\wiiu\backups\000100014a415650\3\savedata.bin"
 # Get the data from the source file as a byte array
 $bytesvc = [System.IO.File]::ReadAllBytes($savedatapath)
 
-# Prefix it with 48 0ed out byutes
+# Prefix it with 48 0ed out bytes
 $newbytesvc = [System.Byte[]]::CreateInstance([System.Byte], 48) + $bytesvc
 
 # Fill in the compulsory values and the preset id (leaving the checksum 0 for now)
@@ -38,18 +38,18 @@ $newbytesvc[21] = 0xCB
 $newbytesvc[22] = 0x94
 $newbytesvc[23] = 0x2C
 
-# Calculate the checksum across the whole "file"
+# Calculate the "checksum minus 1" across the whole array
 $checksum = 0x0
 for( $i = 0; $i -lt $newbytesvc.Count; $i++ ) {
     $checksum += $newbytesvc[$i]
 }
 $checksum = $checksum % 0x10000 - 1
 
-# Pop the checksum in the "file" (LE)
+# Pop the checksum in the array (LE)
 $newbytesvc[2] = $checksum -band 0xFF
 $newbytesvc[3] = $checksum -shr 0x08
 
-# Spit it out to a file
+# Spit it out to a file (overwriting)
 $outputfile = ( Split-Path $savedatapath ).ToString() + "\" + $romname + ".ves"
 [System.IO.File]::WriteAllBytes( $outputfile , $newbytesvc )
 "File saved to ""{0}""." -f $outputfile
